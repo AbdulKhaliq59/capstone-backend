@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/user");
-const { post } = require("./post");
+const userController=require('../controller/user');
 const router = express.Router();
 
 //Get All user stored in database
@@ -26,13 +26,8 @@ router.get('/:id',async(req,res)=>{
 })
 
 //Save User in database
-router.post("/", async (req, res) => {
-    const user= new User({
-        username:req.body.username,
-        password:req.body.password
-    });
-    await user.save();
-    res.send(user);
+router.post("/",userController.createUser,(req,res)=>{
+res.send(req.user);
 });
 //
 
