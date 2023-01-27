@@ -1,5 +1,17 @@
 const Post = require("../models/post");
+const Joi = require("joi");
 const createPost = async (req, res, next) => {
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    imageUrl: Joi.string().uri().required(),
+  });
+  const { error } = schema.validate(req.body);
+  if (error) {
+    res.status(404);
+    res.send({ error: error.message });
+    return;
+  }
   const post = new Post({
     title: req.body.title,
     description: req.body.description,
@@ -9,7 +21,7 @@ const createPost = async (req, res, next) => {
     const savePost = await post.save();
     req.post = savePost;
     next();
-  } catch {
+  } catch (error){
     res.status(404);
     res.send({ error: error.message });
   }
@@ -26,6 +38,14 @@ const getAllPosts = async (req, res, next) => {
 };
 
 const getOnePost = async (req, res, next) => {
+  const schema = Joi.object({
+    id: Joi.string().required(),
+  });
+  const { error } = schema.validate(req.params);
+  if (error) {
+    res.status(404);
+    res.send({ error: error.message });
+  }
   try {
     const post = await Post.findOne({ _id: req.params.id });
     if (!post) {
@@ -40,6 +60,18 @@ const getOnePost = async (req, res, next) => {
   }
 };
 const updateOnePost = async (req, res, next) => {
+  const schema = Joi.object({
+    id: Joi.string().required(),
+    title: Joi.string().allow(""),
+    description: Joi.string().allow(""),
+    imageUrl: Joi.string().uri().allow(""),
+  });
+  const { error } = schema.validate({ ...req.params, ...req.body });
+  if (error) {
+    res.status(404);
+    res.send({ error: error.message });
+    return;
+  }
   try {
     const post = await Post.findOne({ _id: req.params.id });
     if (!post) {
@@ -64,6 +96,14 @@ const updateOnePost = async (req, res, next) => {
   }
 };
 const deletePost = async (req, res, next) => {
+  const schema = Joi.object({
+    id: Joi.string().required(),
+  });
+  const { error } = schema.validate(req.params);
+  if (error) {
+    res.status(404);
+    res.send({ error: error.message });
+  }
   try {
     const deletedPost = await Post.deleteOne({ _id: req.params.id });
     if (!deletedPost) {
@@ -77,7 +117,6 @@ const deletePost = async (req, res, next) => {
     res.send({ error: "Post doesn't exist" });
   }
 };
-
 // const deleteAllPost = async (req, res, next) => {
 //   try {
 //     const deletedPosts = await Post.deleteMany({});
@@ -92,11 +131,34 @@ const deletePost = async (req, res, next) => {
 //     res.send({ error: "Failed to delete All posts!" });
 //   }
 // };
+
+
+//Update Post
+const UpdatePost=async(req,res)=>{
+  try {
+    const existingPost= await Post.findById({_id:req.params.id})
+    if(!existingPost)
+    {
+      return res.status (400).send({status:"Fail",message:"Post doesn't exist"});
+    }
+    if(req.body.comments)
+    {
+      existingPost.comments=req.body.comments;
+    }
+    await existingPost.save();
+  } catch (error) {
+    res.status(500).send({status:"Fail",message:"Failed to add comments"});
+  }
+
+}
+
+
 module.exports = {
   createPost: createPost,
   getAllPost: getAllPosts,
   getOnePost: getOnePost,
   updateOnePost: updateOnePost,
   deletePost: deletePost,
+  UpdatePost:UpdatePost,
   // deleteAllPost:deleteAllPost
 };
