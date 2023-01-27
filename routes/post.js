@@ -1,5 +1,6 @@
 const express = require("express");
 const postController=require('../controller/Post');
+const authenticate = require("../middleware/auth");
 const router = express.Router();
 
 //Create post
@@ -12,7 +13,7 @@ router.get('/',postController.getAllPost,(req,res)=>{
 });
 
 //View individual Post
-router.get("/:id", postController.getOnePost,(req,res)=>{
+router.get("/:id",authenticate, postController.getOnePost,(req,res)=>{
   res.send(req.post);
 });
 //update post
