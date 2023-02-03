@@ -2,14 +2,14 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { authenticate } = require("../middleware/auth");
 require("dotenv/config");
 const User = require("../models/user");
-
 /**
  * @swagger
  * /signin:
  *   post:
+ *     summary: login for user
+ *     tags: [Auth]
  *     description: Log in an existing user
  *     requestBody:
  *       required: true
@@ -44,6 +44,7 @@ const User = require("../models/user");
  *       400:
  *         description: Bad request
  */
+
 
 
 router.post("/", async (req, res) => {

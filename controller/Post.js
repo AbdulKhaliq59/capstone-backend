@@ -8,7 +8,7 @@ const createPost = async (req, res, next) => {
   });
   const { error } = schema.validate(req.body);
   if (error) {
-    res.status(404);
+    res.status(404); //change
     res.send({ error: error.message });
     return;
   }
@@ -19,10 +19,12 @@ const createPost = async (req, res, next) => {
   });
   try {
     const savePost = await post.save();
+    res.status(201);
     req.post = savePost;
+    res.status(201).json({ message: "Post Created Successuly" });
     next();
-  } catch (error){
-    res.status(404);
+  } catch (error) {
+    res.status(404); //change to 500
     res.send({ error: error.message });
   }
 };
@@ -30,6 +32,7 @@ const getAllPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({});
     req.posts = posts;
+    res.status(201);
     next();
   } catch {
     res.status(404);
@@ -52,6 +55,11 @@ const getOnePost = async (req, res, next) => {
       res.status(404);
       return res.send({ error: "Post doesn't exist" });
     }
+    if(!post._id){
+      res.status(404);
+      return res.send({error:"Post doesn't have an _id property"});
+    }
+    res.status(200).json({ message: "success" });
     req.post = post;
     next();
   } catch {
@@ -132,26 +140,23 @@ const deletePost = async (req, res, next) => {
 //   }
 // };
 
-
 //Update Post
-const UpdatePost=async(req,res)=>{
+const UpdatePost = async (req, res) => {
   try {
-    const existingPost= await Post.findById({_id:req.params.id})
-    if(!existingPost)
-    {
-      return res.status (400).send({status:"Fail",message:"Post doesn't exist"});
+    const existingPost = await Post.findById({ _id: req.params.id });
+    if (!existingPost) {
+      return res
+        .status(400)
+        .send({ status: "Fail", message: "Post doesn't exist" });
     }
-    if(req.body.comments)
-    {
-      existingPost.comments=req.body.comments;
+    if (req.body.comments) {
+      existingPost.comments = req.body.comments;
     }
     await existingPost.save();
   } catch (error) {
-    res.status(500).send({status:"Fail",message:"Failed to add comments"});
+    res.status(500).send({ status: "Fail", message: "Failed to add comments" });
   }
-
-}
-
+};
 
 module.exports = {
   createPost: createPost,
@@ -159,6 +164,6 @@ module.exports = {
   getOnePost: getOnePost,
   updateOnePost: updateOnePost,
   deletePost: deletePost,
-  UpdatePost:UpdatePost,
+  UpdatePost: UpdatePost,
   // deleteAllPost:deleteAllPost
 };
