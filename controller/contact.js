@@ -8,9 +8,8 @@ const addFeedBack = async (req, res, next) => {
     content: Joi.string().required(),
   });
   const { error } = schema.validate(req.body);
-  console.log(error);
   if (error) {
-    return res.status(404).send({error:error.message});
+    return res.status(404).json({ error: error.message });
   }
   const contact = new Contact({
     fullName: req.body.fullName,
@@ -18,15 +17,37 @@ const addFeedBack = async (req, res, next) => {
     content: req.body.content,
   });
   try {
-    const savefeedBack=contact.save();
-    req.contact=savefeedBack;
+    const savefeedBack = contact.save();
+    req.contact = savefeedBack;
+    res.json(contact);
   } catch (error) {
     res.status(404);
-    res.send({error:error.message});
+    res.json({ error: error.message });
   }
 };
-
-
-module.exports={
-    addFeedBack
-}
+const getAllFeedBack = async (req, res, next) => {
+  try {
+    const contacts = await Contact.find({});
+    req.contacts = contacts;
+    res.status(201).json(contacts);
+  } catch (error) {
+    res.status(404).json({ error: "Failed to retrieve all feedback" });
+  }
+};
+const deleteFeedBack = async (req, res) => {
+  try {
+    const deletedFeeback = await Contact.deleteOne({ _id: req.params.id });
+    if (!deletedFeeback) {
+      res.status(404).json({ error: "No feedback with such ID" });
+    }
+    req.deletedFeeback = deletedFeeback;
+    res.status(201).json({ message: "Feedback deleted Successuly " });
+  } catch (error) {
+    res.status(500).json({ error: "No feedback with such ID" });
+  }
+};
+module.exports = {
+  addFeedBack,
+  getAllFeedBack,
+  deleteFeedBack
+};
