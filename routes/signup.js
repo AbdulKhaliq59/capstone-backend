@@ -8,6 +8,8 @@ const {createUser}=require('../controller/user');
  * @swagger
  * /signup:
  *   post:
+ *     summary: create new user
+ *     tags: [Auth]
  *     description: Sign up a new user
  *     requestBody:
  *       required: true
@@ -43,5 +45,7 @@ const {createUser}=require('../controller/user');
 
 
 router.post('/',createUser);
-
+router.get('/',(req,res)=>{
+    res.send("This is signup page");
+})
 module.exports=router;
