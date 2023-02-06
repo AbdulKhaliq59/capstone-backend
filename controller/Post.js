@@ -53,18 +53,18 @@ const getOnePost = async (req, res, next) => {
     const post = await Post.findOne({ _id: req.params.id });
     if (!post) {
       res.status(404);
-      return res.send({ error: "Post doesn't exist" });
+      return res.json({ error: "Post doesn't exist" });
     }
-    if(!post._id){
-      res.status(404);
-      return res.send({error:"Post doesn't have an _id property"});
+    if (!post._id) {
+      // res.status(201);
+      res.json({ error: "Post doesn't have an _id property" });
     }
     res.status(200).json({ message: "success" });
     req.post = post;
     next();
   } catch {
     res.status(404);
-    res.send({ error: "Post doesn't exist!" });
+    res.json({ error: "Post doesn't exist!" });
   }
 };
 const updateOnePost = async (req, res, next) => {
@@ -77,14 +77,14 @@ const updateOnePost = async (req, res, next) => {
   const { error } = schema.validate({ ...req.params, ...req.body });
   if (error) {
     res.status(404);
-    res.send({ error: error.message });
+    res.json({ error: error.message });
     return;
   }
   try {
     const post = await Post.findOne({ _id: req.params.id });
     if (!post) {
       res.status(404);
-      res.send({ error: "Post doesn't exist" });
+      res.json({ error: "Post doesn't exist" });
     }
     if (req.body.title) {
       post.title = req.body.title;
@@ -99,8 +99,7 @@ const updateOnePost = async (req, res, next) => {
     req.post = post;
     next();
   } catch {
-    res.status(404);
-    res.send({ error: "Post doesn't exist" });
+    res.status(404).json({ error: "Post doesn't exist" });
   }
 };
 const deletePost = async (req, res, next) => {
@@ -116,13 +115,14 @@ const deletePost = async (req, res, next) => {
     const deletedPost = await Post.deleteOne({ _id: req.params.id });
     if (!deletedPost) {
       res.status(404);
-      return res.send({ error: "Post doesn't exist" });
+      res.json({ error: "Post doesn't exist" });
     }
     req.deletedPost = deletedPost;
+    res.status(200).json({ message: "Post deleted Successfully" });
     next();
   } catch {
-    res.status(404);
-    res.send({ error: "Post doesn't exist" });
+    res.status(500);
+    res.send({ error: "Internal server error" });
   }
 };
 // const deleteAllPost = async (req, res, next) => {

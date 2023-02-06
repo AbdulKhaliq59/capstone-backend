@@ -11,17 +11,15 @@ const createUser = async (req, res) => {
     return res.status(400).send(error.details);
   }
   let user = await User.findOne({ username: req.body.username });
-  if (user) return res.status(400).send("User already registered");
+  if (user) return res.status(400).json({message:"User already registered"});
   req.body.password = await hashPassword(req.body.password);
   user = new User({
     username: req.body.username,
     password: req.body.password,
   });
   await user.save();
-  res.send(user);
+  res.status(200).json({message:"User created Successfully"});
   //Create and assign JWT
-  const token =jwt.sign({_id:user._id},process.env.TOKEN_SECRET);
-  res.header("auth-token",token).send(user,token);
 };
 
 //Retrieve All User
