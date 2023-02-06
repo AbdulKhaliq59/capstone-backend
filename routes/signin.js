@@ -45,17 +45,15 @@ const User = require("../models/user");
  *         description: Bad request
  */
 
-
-
 router.post("/", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     const password = await bcrypt.compare(req.body.password, user.password);
     if (!user) {
-      return res.status(400).send("User not Found");
+      res.status(400).json({ error: "User not Found" });
     }
     if (!password) {
-      res.status().send("Password is wrong");
+      res.status(400).json({ error: "Password is wrong" });
     }
     const UserExist = {
       userId: user.id,
@@ -63,13 +61,14 @@ router.post("/", async (req, res) => {
     };
     const token = jwt.sign(UserExist, process.env.TOKEN_SECRET);
     res.setHeader("Authorization", `Bearer ${token}`);
-    res.send({
+    res.json({
       status: "success",
       message: `welcome ${user.username}`,
       data: token,
     });
   } catch (error) {
-    res.status(400).send("Not Authorized");
+    console.log(error);
+    res.status(400).json({ error: "Password is wrong" });
   }
 
   /*
