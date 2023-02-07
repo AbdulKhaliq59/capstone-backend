@@ -47,7 +47,6 @@ const options = {
 };
 
 const specs = swaggerJsDoc(options);
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/posts", postRoutes, commentRoute);
 app.use("/signup", signupRoutes);
