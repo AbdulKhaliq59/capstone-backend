@@ -7,11 +7,13 @@ const contactRoute = require("./routes/contact");
 const userRoute = require("./routes/user");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express();
 
 // app.use(express.json());
 app.use(bodyParser.json());
+app.use(cors());
 const options = {
   swaggerDefinition: {
     openapi: "3.0.0",
