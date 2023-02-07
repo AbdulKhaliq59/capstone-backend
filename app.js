@@ -4,10 +4,12 @@ const signupRoutes = require("./routes/signup");
 const signinRoutes = require("./routes/signin");
 const commentRoute = require("./routes/comment");
 const contactRoute = require("./routes/contact");
+const userRoute = require("./routes/user");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 const app = express();
+
 // app.use(express.json());
 app.use(bodyParser.json());
 const options = {
@@ -46,9 +48,10 @@ const specs = swaggerJsDoc(options);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/posts", postRoutes, commentRoute);
-app.use("/signup", signupRoutes); 
+app.use("/signup", signupRoutes);
 app.use("/signin", signinRoutes);
 app.use("/contact", contactRoute);
+app.use("/users", userRoute);
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to my api" });
 });
