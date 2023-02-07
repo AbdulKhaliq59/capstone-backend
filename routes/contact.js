@@ -1,7 +1,11 @@
 const express = require("express");
-const { addFeedBack, getAllFeedBack, deleteFeedBack } = require("../controller/contact");
+const {
+  addFeedBack,
+  getAllFeedBack,
+  deleteFeedBack,
+} = require("../controller/contact");
 const router = express.Router();
-const authenticate= require("../middleware/auth");
+const authenticate = require("../middleware/auth");
 
 //Documentation for Create a post
 /**
@@ -58,25 +62,25 @@ const authenticate= require("../middleware/auth");
 router.post("/", addFeedBack);
 
 /**
-* @swagger
-* /contact:
-*   get:
-*       summary: For returning all Feedback
-*       tags: [Feedback]
-*       description: return all FeedBack
-*       responses:
-*        200:
-*            description: Feedbacks Returned successfully
-*            content:
-*              application/json:
-*                schema:
-*                    type: object
-*         
-*/
+ * @swagger
+ * /contact:
+ *   get:
+ *       summary: For returning all Feedback
+ *       tags: [Feedback]
+ *       description: return all FeedBack
+ *       responses:
+ *        200:
+ *            description: Feedbacks Returned successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                    type: object
+ *
+ */
 
 //Retrieve  all Feeback
-router.get('/',getAllFeedBack);
+router.get("/", authenticate, getAllFeedBack);
 
 //delete specific feedback
-router.delete('/:id',authenticate,deleteFeedBack);
+router.delete("/:id", authenticate, deleteFeedBack);
 module.exports = router;
