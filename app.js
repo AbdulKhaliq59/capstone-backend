@@ -39,7 +39,7 @@ const options = {
     ],
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "https://capstone-backend-mzjj.onrender.com",
       },
     ],
   },
@@ -47,7 +47,6 @@ const options = {
 };
 
 const specs = swaggerJsDoc(options);
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/posts", postRoutes, commentRoute);
 app.use("/signup", signupRoutes);
