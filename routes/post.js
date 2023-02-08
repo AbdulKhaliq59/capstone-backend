@@ -33,12 +33,9 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               user:
+ *               post:
  *                 type: object
- *                 description: The created user
- *               token:
- *                 type: string
- *                 description: The JWT assigned to the user
+ *                 description: The Post Created
  *     400:
  *       description: Bad request
  */
