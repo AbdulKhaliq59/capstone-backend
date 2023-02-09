@@ -24,6 +24,15 @@ const {createUser}=require('../controller/user');
  *               password:
  *                 type: string
  *                 description: The password for the new user
+ *               dateOfBirth:
+ *                 type: string
+ *                 description: Birthdate for user
+ *               phoneNumber:
+ *                 type: string
+ *                 description: Phone Number of the user
+ *               gender:
+ *                  type: string
+ *                  description: Gender sex for the user
  *     responses:
  *       201:
  *         description: Successful operation
