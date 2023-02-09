@@ -66,7 +66,7 @@ router.post("/", async (req, res) => {
       data: token,
     });
   } catch (error) {
-    res.status(400).send("Not Authorized");
+    res.status(400).json("Not Authorized");
   }
 });
 module.exports = router;

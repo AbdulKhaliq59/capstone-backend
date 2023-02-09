@@ -1,8 +1,8 @@
 const User = require("../models/user");
 const { validateUser, hashPassword } = require("../middleware/validation");
 const { default: mongoose } = require("mongoose");
-const jwt=require("jsonwebtoken");
-require('dotenv/config');
+const jwt = require("jsonwebtoken");
+require("dotenv/config");
 //Create New User
 const createUser = async (req, res) => {
   const { error, value } = validateUser(req.body);
@@ -11,15 +11,17 @@ const createUser = async (req, res) => {
     return res.status(400).send(error.details);
   }
   let user = await User.findOne({ username: req.body.username });
-  if (user) return res.status(400).json({message:"User already registered"});
+  if (user) return res.status(400).json({ message: "User already registered" });
   req.body.password = await hashPassword(req.body.password);
   user = new User({
     username: req.body.username,
     password: req.body.password,
+    dateOfBirth: req.body.dateOfBirth,
+    phoneNumber: req.body.phoneNumber,
+    gender: req.body.gender,
   });
   await user.save();
-  res.status(200).json({message:"User created Successfully"});
-  //Create and assign JWT
+  res.status(200).json({ message: "User created Successfully" });
 };
 
 //Retrieve All User
