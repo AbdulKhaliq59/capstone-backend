@@ -1,30 +1,44 @@
 const Post = require("../models/post");
 const Joi = require("joi");
+require("dotenv/config");
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDNAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
+});
 const createPost = async (req, res, next) => {
-  const schema = Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
-    imageUrl: Joi.string().uri().required(),
-  });
-  const { error } = schema.validate(req.body);
-  if (error) {
-    res.status(404); //change
-    res.send({ error: error.message });
-    return;
-  }
-  const post = new Post({
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-  });
   try {
+    const result = await cloudinary.uploader.upload(req.body.imageUrl, {
+      folder: "posts",
+    });
+    req.body.imageUrl = result.secure_url;
+
+    const schema = Joi.object({
+      title: Joi.string().required(),
+      description: Joi.string().required(),
+      imageUrl: Joi.string().uri().required(),
+    });
+    const { error } = schema.validate(req.body);
+    if (error) {
+      res.status(404);
+      res.send({ error: error.message });
+      return;
+    }
+    const post = new Post({
+      title: req.body.title,
+      description: req.body.description,
+      imageUrl: req.body.imageUrl,
+    });
+
     const savePost = await post.save();
+
     res.status(201);
     req.post = savePost;
-    res.status(201).json({ message: "Post Created Successuly" });
+    res.status(200).json({ message: "Post Created Successuly" });
     next();
   } catch (error) {
-    res.status(404); //change to 500
+    res.status(500);
     res.send({ error: error.message });
   }
 };

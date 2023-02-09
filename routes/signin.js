@@ -44,16 +44,15 @@ const User = require("../models/user");
  *       400:
  *         description: Bad request
  */
-
 router.post("/", async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     const password = await bcrypt.compare(req.body.password, user.password);
     if (!user) {
-      res.status(400).json({ error: "User not Found" });
+      return res.status(400).send("User not Found");
     }
     if (!password) {
-      res.status(400).json({ error: "Password is wrong" });
+      res.status().send("Password is wrong");
     }
     const UserExist = {
       userId: user.id,
@@ -61,18 +60,18 @@ router.post("/", async (req, res) => {
     };
     const token = jwt.sign(UserExist, process.env.TOKEN_SECRET);
     res.setHeader("Authorization", `Bearer ${token}`);
-    res.json({
+    res.send({
       status: "success",
       message: `welcome ${user.username}`,
       data: token,
     });
   } catch (error) {
-    console.log(error);
-    res.status(400).json({ error: "Password is wrong" });
+    res.status(400).json("Not Authorized");
   }
+});
+module.exports = router;
 
-  /*
-
+/*
     const payload = {
       userId: user._id,
       username: user.username,
@@ -88,6 +87,3 @@ router.post("/", async (req, res) => {
     res.status(404).send({ status: "fail", message: "Error logging in" });
   }
      */
-});
-
-module.exports = router;
