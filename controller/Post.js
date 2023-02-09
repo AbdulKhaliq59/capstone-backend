@@ -1,10 +1,11 @@
 const Post = require("../models/post");
 const Joi = require("joi");
+require("dotenv/config");
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
-  cloud_name: "daognkuqr",
-  api_key: "364827857523956",
-  api_secret: "UF-wpwDvNFcZ19IMcOENukxqiXc",
+  cloud_name: process.env.CLOUDNAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
 });
 const createPost = async (req, res, next) => {
   try {
@@ -31,7 +32,7 @@ const createPost = async (req, res, next) => {
     });
 
     const savePost = await post.save();
-    console.log(savePost);
+
     res.status(201);
     req.post = savePost;
     res.status(200).json({ message: "Post Created Successuly" });
