@@ -1,5 +1,6 @@
 const express = require("express");
-const postController=require('../controller/Post');
+const { upload } = require("../controller/Post");
+const postController = require("../controller/Post");
 const authenticate = require("../middleware/auth");
 const router = express.Router();
 //Documentation for Create a post
@@ -40,32 +41,36 @@ const router = express.Router();
  *       description: Bad request
  */
 
-
 //Create post
-router.post("/", postController.createPost,(req,res)=>{
-  res.send(req.post);
-});
+router.post(
+  "/",
+  upload.single("imageUrl"),
+  postController.createPost,
+  (req, res) => {
+    res.send(req.post);
+  }
+);
 
 /**
-* @swagger
-* /posts:
-*   get:
-*       summary: For returning all posts
-*       tags: [Posts]
-*       
-*       description: return all posts
-*       responses:
-*        200:
-*            description: post Returned successfully
-*            content:
-*              application/json:
-*                schema:
-*                    type: object
-*         
-*/
+ * @swagger
+ * /posts:
+ *   get:
+ *       summary: For returning all posts
+ *       tags: [Posts]
+ *
+ *       description: return all posts
+ *       responses:
+ *        200:
+ *            description: post Returned successfully
+ *            content:
+ *              application/json:
+ *                schema:
+ *                    type: object
+ *
+ */
 
 //View all Post
-router.get('/',postController.getAllPost,(req,res)=>{
+router.get("/", postController.getAllPost, (req, res) => {
   res.send(req.posts);
 });
 
@@ -114,9 +119,8 @@ router.get('/',postController.getAllPost,(req,res)=>{
  *                   description: Error message
  */
 
-
 //View individual Post
-router.get("/:id",authenticate, postController.getOnePost,(req,res)=>{
+router.get("/:id", authenticate, postController.getOnePost, (req, res) => {
   res.send(req.post);
 });
 //documentation for Update post
@@ -181,9 +185,9 @@ router.get("/:id",authenticate, postController.getOnePost,(req,res)=>{
  */
 
 //update post
-router.patch("/:id",postController.updateOnePost,(req,res)=>{
+router.patch("/:id", postController.updateOnePost, (req, res) => {
   res.send(req.post);
-} );
+});
 
 //Documentation for deleting specific post
 
@@ -223,7 +227,7 @@ router.patch("/:id",postController.updateOnePost,(req,res)=>{
  */
 
 //Delete one Post
-router.delete("/:id",authenticate, postController.deletePost,(req,res)=>{
+router.delete("/:id", authenticate, postController.deletePost, (req, res) => {
   res.send("Post deleted Successfully");
 });
 

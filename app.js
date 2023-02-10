@@ -10,9 +10,10 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const app = express();
 
-// app.use(express.json());
+const app = express();
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
 app.use(cors());
 const options = {

@@ -1,23 +1,29 @@
 const Post = require("../models/post");
 const Joi = require("joi");
+const multer = require("multer");
 require("dotenv/config");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "-" + Date.now());
+  },
+});
+const upload = multer({ storage: storage });
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
   cloud_name: process.env.CLOUDNAME,
   api_key: process.env.API_KEY,
   api_secret: process.env.API_SECRET,
 });
+
 const createPost = async (req, res, next) => {
   try {
-    const result = await cloudinary.uploader.upload(req.body.imageUrl, {
-      folder: "posts",
-    });
-    req.body.imageUrl = result.secure_url;
-
     const schema = Joi.object({
       title: Joi.string().required(),
       description: Joi.string().required(),
-      imageUrl: Joi.string().uri().required(),
     });
     const { error } = schema.validate(req.body);
     if (error) {
@@ -25,6 +31,10 @@ const createPost = async (req, res, next) => {
       res.send({ error: error.message });
       return;
     }
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "posts",
+    });
+    req.body.imageUrl = result.secure_url;
     const post = new Post({
       title: req.body.title,
       description: req.body.description,
@@ -42,6 +52,7 @@ const createPost = async (req, res, next) => {
     res.send({ error: error.message });
   }
 };
+
 const getAllPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({});
@@ -179,5 +190,6 @@ module.exports = {
   updateOnePost: updateOnePost,
   deletePost: deletePost,
   UpdatePost: UpdatePost,
+  upload: upload,
   // deleteAllPost:deleteAllPost
 };
