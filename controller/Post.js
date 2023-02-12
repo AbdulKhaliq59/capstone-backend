@@ -4,15 +4,6 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 require("dotenv/config");
 
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, "./uploads");
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, file.fieldname + "-" + Date.now());
-//   },
-// });
-// const upload = multer({ storage: storage });
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
   cloud_name: process.env.CLOUDNAME,
@@ -22,6 +13,20 @@ cloudinary.config({
 
 const createPost = async (req, res, next) => {
   try {
+    if (!req.file) {
+      res.status(400).json({ error: "Image is required" });
+      return;
+    }
+
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "posts",
+      });
+      req.body.imageUrl = result.secure_url;
+    } catch (error) {
+      res.status(500).json({ error: "Failed to upload image to Cloudinary" });
+      return;
+    }
     const schema = Joi.object({
       title: Joi.string().required(),
       description: Joi.string().required(),
@@ -29,14 +34,9 @@ const createPost = async (req, res, next) => {
     });
     const { error } = schema.validate(req.body);
     if (error) {
-      res.status(404);
-      res.send({ error: error.message });
+      res.status(400).json({ error: error.message });
       return;
     }
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "posts",
-    });
-    req.body.imageUrl = result.secure_url;
     const post = new Post({
       title: req.body.title,
       description: req.body.description,
@@ -45,16 +45,23 @@ const createPost = async (req, res, next) => {
 
     const savePost = await post.save();
 
-    res.status(201);
-    req.post = savePost;
-    res.status(200).json({ message: "Post Created Successuly" });
+    res.status(201).json({ message: "Post Created Successfully" });
     next();
   } catch (error) {
-    res.status(500);
-    res.send({ error: error.message });
-    next();
+    res.status(500).json({ error: error.message });
+    return;
   }
 };
+
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "./uploads");
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, file.fieldname + "-" + Date.now());
+//   },
+// });
+// const upload = multer({ storage: storage });
 
 const getAllPosts = async (req, res, next) => {
   try {
