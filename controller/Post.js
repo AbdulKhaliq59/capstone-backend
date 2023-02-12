@@ -25,7 +25,7 @@ const createPost = async (req, res, next) => {
     const schema = Joi.object({
       title: Joi.string().required(),
       description: Joi.string().required(),
-      imageurl: Joi.any().required(),
+      imageUrl: Joi.any().required(),
     });
     const { error } = schema.validate(req.body);
     if (error) {
