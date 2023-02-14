@@ -94,8 +94,7 @@ const getOnePost = async (req, res, next) => {
       // res.status(201);
       res.json({ error: "Post doesn't have an _id property" });
     }
-    res.status(200).json({ message: "success" });
-    req.post = post;
+    res.status(200).json({ message: "success", data: post });
     next();
   } catch {
     res.status(404);
@@ -103,38 +102,45 @@ const getOnePost = async (req, res, next) => {
   }
 };
 const updateOnePost = async (req, res, next) => {
-  const schema = Joi.object({
-    id: Joi.string().required(),
-    title: Joi.string().allow(""),
-    description: Joi.string().allow(""),
-    imageUrl: Joi.string().uri().allow(""),
-  });
-  const { error } = schema.validate({ ...req.params, ...req.body });
-  if (error) {
-    res.status(404);
-    res.json({ error: error.message });
-    return;
-  }
   try {
-    const post = await Post.findOne({ _id: req.params.id });
+    const postId = req.params.id;
+    const post = await Post.findById(postId);
     if (!post) {
-      res.status(404);
-      res.json({ error: "Post doesn't exist" });
+      res.status(404).json({ error: "Post not found" });
+      return;
     }
-    if (req.body.title) {
-      post.title = req.body.title;
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "posts",
+        });
+        req.body.imageUrl = result.secure_url;
+      } catch (error) {
+        res.status(500).json({ error: "Failed to upload image to Cloudinary" });
+        return;
+      }
     }
-    if (req.body.description) {
-      post.description = req.body.description;
+    const schema = Joi.object({
+      title: Joi.string(),
+      description: Joi.string(),
+      imageUrl: Joi.any(),
+    });
+    const { error } = schema.validate(req.body);
+    if (error) {
+      res.status(400).json({ error: error.message });
+      return;
     }
-    if (req.body.imageUrl) {
-      post.imageurl = req.body.imageUrl;
-    }
-    await post.save();
-    req.post = post;
+    if (req.body.title) post.title = req.body.title;
+    if (req.body.description) post.description = req.body.description;
+    if (req.body.imageUrl) post.imageUrl = req.body.imageUrl;
+
+    const updatePost = await post.save();
+
+    res.status(200).json({ message: "Post updated Successfully",data:updatePost });
     next();
-  } catch {
-    res.status(404).json({ error: "Post doesn't exist" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+    return;
   }
 };
 const deletePost = async (req, res, next) => {

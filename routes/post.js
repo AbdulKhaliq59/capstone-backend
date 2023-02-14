@@ -8,42 +8,65 @@ const router = express.Router();
  * @swagger
  * /posts:
  *   post:
- *     summary: For Creating new posts
+ *     summary: Create a new post
  *     tags: [Posts]
+ *     description: Create a new post with title, description, and image
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               title:
  *                 type: string
- *                 description: The Title for the new blog post
+ *                 description: Title of the post
  *               description:
  *                 type: string
- *                 description: The description for the new blog post
- *               imageUrl:
+ *                 description: Description of the post
+ *               image:
  *                 type: string
- *                 description: The location for the new blog post
- *   responses:
- *     201:
- *       description: Successful operation
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               post:
- *                 type: object
- *                 description: The Post Created
- *     400:
- *       description: Bad request
+ *                 format: binary
+ *                 description: Image for the post
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
  */
 
 //Create post
 router.post(
   "/",
+  authenticate,
   upload.single("imageUrl"),
   postController.createPost,
   (req, res) => {
@@ -140,7 +163,7 @@ router.get("/:id", authenticate, postController.getOnePost, (req, res) => {
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -150,9 +173,9 @@ router.get("/:id", authenticate, postController.getOnePost, (req, res) => {
  *               description:
  *                 type: string
  *                 description: Updated description of the post
- *               imageUrl:
- *                 type: string
- *                 description: Updated URL of the post's image
+ *               image:
+ *                 type: file
+ *                 description: Updated image of the post
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -163,17 +186,31 @@ router.get("/:id", authenticate, postController.getOnePost, (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 title:
+ *                 message:
  *                   type: string
- *                   description: Title of the updated post
- *                 description:
+ *                   description: Success message
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
  *                   type: string
- *                   description: Description of the updated post
- *                 imageUrl:
- *                   type: string
- *                   description: URL of the updated post's image
+ *                   description: Error message
  *       404:
  *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *       500:
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -185,9 +222,15 @@ router.get("/:id", authenticate, postController.getOnePost, (req, res) => {
  */
 
 //update post
-router.patch("/:id", postController.updateOnePost, (req, res) => {
-  res.send(req.post);
-});
+router.patch(
+  "/:id",
+  authenticate,
+  upload.single("imageUrl"),
+  postController.updateOnePost,
+  (req, res) => {
+    res.send(req.post);
+  }
+);
 
 //Documentation for deleting specific post
 
