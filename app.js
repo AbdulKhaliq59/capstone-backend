@@ -15,7 +15,16 @@ const app = express();
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
-app.use(cors());
+
+const corsOpts = {
+  origin: "*",
+
+  methods: ["GET", "POST", "DELETE", "PATCH"],
+
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOpts));
+
 const options = {
   swaggerDefinition: {
     openapi: "3.0.0",
@@ -42,6 +51,9 @@ const options = {
     servers: [
       {
         url: "https://capstone-backend-mzjj.onrender.com",
+      },
+      {
+        url: "http://localhost:3000",
       },
     ],
   },
