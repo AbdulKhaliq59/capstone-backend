@@ -46,29 +46,34 @@ const User = require("../models/user");
  */
 router.post("/", async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
-    const password = await bcrypt.compare(req.body.password, user.password);
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
     if (!user) {
-      return res.status(400).send("User not Found");
+      return res.status(400).send("User not found");
     }
-    if (!password) {
-      res.status().send("Password is wrong");
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(400).send("Invalid password");
     }
-    const UserExist = {
-      userId: user.id,
-      username: user.username,
-    };
-    const token = jwt.sign(UserExist, process.env.TOKEN_SECRET);
-    res.setHeader("Authorization", `Bearer ${token}`);
-    res.send({
-      status: "success",
-      message: `welcome ${user.username}`,
-      data: token,
-    });
+
+    const payload = { userId: user.id, username: user.username };
+    const token = jwt.sign(payload, process.env.TOKEN_SECRET);
+
+    if (user.username === "admin@gmail.com") {
+      return res
+        .status(200)
+        .send({ data: token, username: user.username, isAdmin: true });
+    } else {
+      return res
+        .status(200)
+        .send({ data: token, username: user.username, isAdmin: false });
+    }
   } catch (error) {
-    res.status(400).json("Not Authorized");
+    console.log(error);
+    res.status(500).send("Server error");
   }
 });
+
 module.exports = router;
 
 /*

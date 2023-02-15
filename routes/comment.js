@@ -18,8 +18,6 @@ const router = express.Router();
  *         description: ID of the post to add the comment to
  *         required: true
  *         type: string
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -40,9 +38,9 @@ const router = express.Router();
  */
 
 
-//Add comments
+//Add comments  
 
-router.post("/:id/comments", authenticate, addComment,UpdatePost);
+router.post("/:id/comments",addComment);
 
 /**
  * @swagger
@@ -54,7 +52,7 @@ router.post("/:id/comments", authenticate, addComment,UpdatePost);
  *       - name: postId
  *         in: path
  *         description: ID of the post the comment belongs to
- *         required: true
+ *         required: trues
  *         type: string
  *       - name: commentId
  *         in: path
