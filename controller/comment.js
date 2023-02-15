@@ -1,45 +1,66 @@
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
 const User = require("../models/user");
-const { post } = require("../routes/signup");
 require("dotenv/config");
-
-//Add a comment on a Post
 
 const addComment = async (req, res) => {
   try {
-    //Find a particular post or blog
     const post = await Post.findById(req.params.id);
     if (!post) {
-      return res
-        .status(404)
-        .send({ status: "Fail", message: "Post Not Found" });
+      return res.status(404).send({
+        status: "fail",
+        message: "Post not found",
+      });
     }
+
     const token = req.headers.authorization;
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    if (!decoded) {
-      return res.status(401).send({ status: "Fail", message: "Unauthorized" });
+    if (!token) {
+      return res.status(401).send({
+        status: "fail",
+        message: "No token provided",
+      });
     }
+
+    const secretKey = process.env.TOKEN_SECRET;
+    let decoded;
+
+    try {
+      decoded = jwt.verify(token.replace("Bearer ", ""), secretKey);
+    } catch (err) {
+      return res.status(401).send({
+        status: "fail",
+        message: "Invalid token",
+      });
+    }
+
     const user = await User.findOne({ username: decoded.username });
     if (!user) {
       return res.status(404).send({
-        status: "Fail",
-        message: "User not Found",
+        status: "fail",
+        message: "User not found",
       });
     }
+
     const comment = {
       username: user.username,
       comment: req.body.comment,
     };
+
     await Post.findByIdAndUpdate(req.params.id, {
       $push: { comments: comment },
     });
-    return res
-      .status(201)
-      .send({ status: "success", message: "Comments added Successfully" });
-  } catch (error) {
-    res.status(500).send({ status: "Fail", message: "Error adding comment" });
-    console.log(error);
+
+    return res.status(201).json({
+      status: "success",
+      message: "Comment added successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      status: "fail",
+      message: "Error adding comment",
+      error: err,
+    });
   }
 };
 
@@ -101,8 +122,8 @@ const countComments = async (req, res) => {
       .send({ status: "Fail", message: "Error Counting comments " });
   }
 };
- module.exports={
-    addComment,
-    deleteComment,
-    countComments
- }
+module.exports = {
+  addComment,
+  deleteComment,
+  countComments,
+};

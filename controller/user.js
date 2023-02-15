@@ -68,6 +68,7 @@ const deleteUser = async (req, res) => {
   res.send({ error: `user with id ${req.params.id} deleted Successfully` });
 };
 module.exports = {
+  getOneUser,
   getAllUser,
   createUser,
   updateUser,
