@@ -2,7 +2,7 @@ const express = require("express");
 const postRoutes = require("./routes/post");
 const commentRoute = require("./routes/comment");
 const contactRoute = require("./routes/contact");
-const authRoute = require('./routes/Auth')
+const authRoute = require("./routes/Auth");
 const userRoute = require("./routes/user");
 const updatePasswordRoute = require("./routes/profile");
 const swaggerUi = require("swagger-ui-express");
@@ -10,7 +10,7 @@ const swaggerJsDoc = require("swagger-jsdoc");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const app = express();
-
+require("dotenv/config");
 // app.use(express.json());
 app.use(bodyParser.json());
 app.use(cors());
@@ -39,7 +39,7 @@ const options = {
     ],
     servers: [
       {
-        url: "https://capstone-backend-mzjj.onrender.com",
+        url: `${process.env.URL}`,
       },
     ],
   },
