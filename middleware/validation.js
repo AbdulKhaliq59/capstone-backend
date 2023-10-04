@@ -3,12 +3,17 @@ const bcrypt = require("bcrypt");
 
 const validateUser = (user) => {
   const schema = Joi.object({
-    username: Joi.string().email().required(),
-    password: Joi.string().min(5).max(10).alphanum().required(),
+    email: Joi.string().email().required(),
+    username: Joi.string().required(),
+    password: Joi.string().min(5).alphanum().required(),
     confirmedPassword: Joi.ref("password"),
     dateOfBirth: Joi.string().required(),
     phoneNumber: Joi.string().required(),
-    gender: Joi.string().required(),
+    gender: Joi.string(),
+    address: Joi.string(),
+    nationality: Joi.string(),
+    status: Joi.boolean(),
+    role: Joi.string()
   });
   return schema.validate(user);
 };

@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
 const User = require("../models/user");
-const { post } = require("../routes/signup");
 require("dotenv/config");
 
 //Add a comment on a Post

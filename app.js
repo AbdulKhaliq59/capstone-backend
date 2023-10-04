@@ -1,9 +1,8 @@
 const express = require("express");
 const postRoutes = require("./routes/post");
-const signupRoutes = require("./routes/signup");
-const signinRoutes = require("./routes/signin");
 const commentRoute = require("./routes/comment");
 const contactRoute = require("./routes/contact");
+const authRoute = require('./routes/Auth')
 const userRoute = require("./routes/user");
 const updatePasswordRoute = require("./routes/profile");
 const swaggerUi = require("swagger-ui-express");
@@ -51,8 +50,7 @@ const specs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/updatePassword", updatePasswordRoute);
 app.use("/posts", postRoutes, commentRoute);
-app.use("/signup", signupRoutes);
-app.use("/signin", signinRoutes);
+app.use("/auth", authRoute);
 app.use("/contact", contactRoute);
 app.use("/users", userRoute);
 app.get("/", (req, res) => {
