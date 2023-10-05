@@ -11,15 +11,19 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendEmail(sendTo, subject, content, link) {
-  const info = await transporter.sendMail({
-    from: "kananuraabdulkhaliq59@gmail.com",
-    to: sendTo,
-    subject: subject,
-    html: `<b>${content}</b><br>
-                <a href='${link}'>Click here </a>  For ${subject}`,
-  });
+  try {
+    const info = await transporter.sendMail({
+      from: "kananuraabdulkhaliq59@gmail.com",
+      to: sendTo,
+      subject: subject,
+      html: `<b>${content}</b><br>
+                  <a href='${link}'>Click here </a>  For ${subject}`,
+    });
 
-  console.log("Message sent: ", info.messageId);
+    console.log("Message sent: ", info.messageId);
+  } catch (error) {
+    console.log("Error Occur", error);
+  }
 }
 
 module.exports = {
