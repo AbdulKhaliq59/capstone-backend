@@ -79,8 +79,8 @@ router.post("/", addFeedBack);
  */
 
 //Retrieve  all Feeback
-router.get("/", authenticate, getAllFeedBack);
+router.get("/", authenticate.isAdmin, getAllFeedBack);
 
 //delete specific feedback
-router.delete("/:id", authenticate, deleteFeedBack);
+router.delete("/:id", authenticate.isAdmin, deleteFeedBack);
 module.exports = router;

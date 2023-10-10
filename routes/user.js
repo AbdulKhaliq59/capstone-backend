@@ -31,6 +31,6 @@ const router = express.Router();
  */
 
 //Get All user stored in database
-router.get("/", authenticate, userController.getAllUser);
+router.get("/", authenticate.isAdmin, userController.getAllUser);
 router.post("/verify_account", userController.verifyAccount)
 module.exports = router;

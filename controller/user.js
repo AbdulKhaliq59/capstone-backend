@@ -2,6 +2,7 @@ const User = require("../models/user");
 const { validateUser, hashPassword } = require("../middleware/validation");
 const { default: mongoose } = require("mongoose");
 const { sendEmail } = require('../utils/sendEmail')
+const handleError = require('../utils/handleError')
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken");
 require("dotenv/config");
@@ -57,7 +58,7 @@ const verifyAccount = async (req, res) => {
     }
     res.status(200).json({ message: 'Account verified successfully' })
   } catch (error) {
-    res.status(401).json({ message: "Invalid Token" })
+    handleError(error, res)
   }
 }
 
@@ -78,7 +79,8 @@ const signin = async (req, res) => {
     }
     const userExist = {
       userId: user.userId,
-      email: user.email
+      email: user.email,
+      role: user.role
     }
     const token = jwt.sign(userExist, process.env.TOKEN_SECRET);
     res.setHeader("Authorization", `Bearer${token}`)
@@ -88,9 +90,7 @@ const signin = async (req, res) => {
       data: token
     })
   } catch (error) {
-    res.status(400).json({
-      error: "not authorized"
-    })
+    handleError(error, res)
   }
 }
 

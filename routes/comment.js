@@ -42,7 +42,7 @@ const router = express.Router();
 
 //Add comments
 
-router.post("/:id/comments", authenticate, addComment,UpdatePost);
+router.post("/:id/comments", authenticate.isAuthorized, addComment, UpdatePost);
 
 /**
  * @swagger
@@ -76,7 +76,7 @@ router.post("/:id/comments", authenticate, addComment,UpdatePost);
 
 
 //Delete comment
-router.delete("/:id/comments/:id", authenticate, deleteComment);
+router.delete("/:id/comments/:id", authenticate.isAuthorized, deleteComment);
 
 //Documentation counting comments on specific post
 /**
@@ -110,7 +110,7 @@ router.delete("/:id/comments/:id", authenticate, deleteComment);
 
 
 //Count comments
-router.get('/:id/comments/count',countComments);
+router.get('/:id/comments/count', countComments);
 
 
-module.exports=router;
+module.exports = router;
