@@ -1,47 +1,59 @@
 const Post = require("../models/post");
 const Joi = require("joi");
+const handleError = require('../utils/handleError')
+const validation = require('../middleware/validation/Post')
 require("dotenv/config");
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: process.env.CLOUDNAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
-});
 const createPost = async (req, res, next) => {
   try {
-    const result = await cloudinary.uploader.upload(req.body.imageUrl, {
-      folder: "posts",
-    });
-    req.body.imageUrl = result.secure_url;
+    const {
+      post_title,
+      post_subtitles,
+      post_contents,
+      post_media,
+      post_category
 
-    const schema = Joi.object({
-      title: Joi.string().required(),
-      description: Joi.string().required(),
-      imageUrl: Joi.string().uri().required(),
-    });
-    const { error } = schema.validate(req.body);
-    if (error) {
-      res.status(404);
-      res.send({ error: error.message });
-      return;
-    }
-    const post = new Post({
-      title: req.body.title,
-      description: req.body.description,
-      imageUrl: req.body.imageUrl,
+    } = req.body;
+
+    validation.validateSubtitles(post_subtitles)
+    await validation.validatePostTitle(post_title)
+    const extractedSubtitles = post_subtitles.map((substitleObj) => substitleObj.subtitle)
+    //Create a set of subtitle strings for fast lookup
+    const subtitleSet = new Set(extractedSubtitles)
+    const newPost = new Post({
+      post_title,
+      post_subtitles,
+      post_contents,
+      post_images: [],
+      post_videos: [],
+      post_category
     });
 
-    const savePost = await post.save();
+    post_media.forEach((media) => {
+      validation.validateMediaSubtitle(media.subtitle, subtitleSet);
+      if (media.type === "image") {
+        newPost.post_images.push({
+          imageUrl: media.url,
+          subtitle: media.subtitle
+        })
+      }
+      else if (media.type === "video") {
+        newPost.post_videos.push({
+          videoUrl: media.url,
+          subtitle: media.subtitle,
+        })
+      }
+    })
 
-    res.status(201);
-    req.post = savePost;
-    res.status(200).json({ message: "Post Created Successuly" });
-    next();
+    await newPost.save();
+    res.status(201).json({
+      message: "Post Created successfully",
+      post: newPost
+    });
   } catch (error) {
-    res.status(500);
-    res.send({ error: error.message });
+    handleError(error, res)
   }
 };
+
 const getAllPosts = async (req, res, next) => {
   try {
     const posts = await Post.find({});

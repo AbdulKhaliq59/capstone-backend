@@ -1,13 +1,14 @@
 const express = require("express");
-const postController=require('../controller/Post');
-const authenticate = require("../middleware/auth");
+const postController = require('../controller/Post');
+const isAdmin = require("../middleware/auth");
 const router = express.Router();
+
 //Documentation for Create a post
 /**
  * @swagger
  * /posts:
  *   post:
- *     summary: For Creating new posts
+ *     summary: Create a new post
  *     tags: [Posts]
  *     requestBody:
  *       required: true
@@ -16,35 +17,73 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               post_title:
  *                 type: string
- *                 description: The Title for the new blog post
- *               description:
+ *                 description: The title of the new post
+ *               post_subtitles:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     subtitle:
+ *                       type: string
+ *                       description: A subtitle for the post
+ *                 description: An array of subtitles for the post
+ *               post_content:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     content:
+ *                       type: string
+ *                       description: The content of the post
+ *                     subtitle:
+ *                       type: string
+ *                       description: The subtitle associated with the content
+ *                 description: An array of content objects for the post
+ *               post_media:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [image, video]
+ *                       description: The type of media (image or video)
+ *                     url:
+ *                       type: string
+ *                       description: The URL of the media
+ *                     subtitle:
+ *                       type: string
+ *                       description: The subtitle associated with the media
+ *                 description: An array of media objects for the post
+ *               post_category:
  *                 type: string
- *                 description: The description for the new blog post
- *               imageUrl:
- *                 type: string
- *                 description: The location for the new blog post
- *   responses:
- *     201:
- *       description: Successful operation
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               post:
- *                 type: object
- *                 description: The Post Created
- *     400:
- *       description: Bad request
+ *                 description: The category of the post
+ *     responses:
+ *       201:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: A success message
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       500:
+ *         description: Internal server error
  */
 
 
 //Create post
-router.post("/", postController.createPost,(req,res)=>{
-  res.send(req.post);
-});
+router.post("/", isAdmin.isAdmin, postController.createPost);
 
 /**
 * @swagger
@@ -65,7 +104,7 @@ router.post("/", postController.createPost,(req,res)=>{
 */
 
 //View all Post
-router.get('/',postController.getAllPost,(req,res)=>{
+router.get('/', postController.getAllPost, (req, res) => {
   res.send(req.posts);
 });
 
@@ -116,7 +155,7 @@ router.get('/',postController.getAllPost,(req,res)=>{
 
 
 //View individual Post
-router.get("/:id",authenticate, postController.getOnePost,(req,res)=>{
+router.get("/:id", isAdmin.isAuthorized, postController.getOnePost, (req, res) => {
   res.send(req.post);
 });
 //documentation for Update post
@@ -181,9 +220,9 @@ router.get("/:id",authenticate, postController.getOnePost,(req,res)=>{
  */
 
 //update post
-router.patch("/:id",postController.updateOnePost,(req,res)=>{
+router.patch("/:id", postController.updateOnePost, (req, res) => {
   res.send(req.post);
-} );
+});
 
 //Documentation for deleting specific post
 
@@ -223,7 +262,7 @@ router.patch("/:id",postController.updateOnePost,(req,res)=>{
  */
 
 //Delete one Post
-router.delete("/:id",authenticate, postController.deletePost,(req,res)=>{
+router.delete("/:id", isAdmin.isAuthorized, postController.deletePost, (req, res) => {
   res.send("Post deleted Successfully");
 });
 

@@ -4,6 +4,6 @@ const authenticate = require("../middleware/auth");
 const router = express.Router();
 
 //Update password
-router.patch("/", authenticate, updatePassword);
+router.patch("/", authenticate.isAuthorized, updatePassword);
 
 module.exports = router;
