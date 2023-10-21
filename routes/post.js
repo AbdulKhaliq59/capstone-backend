@@ -1,5 +1,5 @@
 const express = require("express");
-const postController = require('../controller/Post');
+const postController = require("../controller/Post");
 const isAdmin = require("../middleware/auth");
 const router = express.Router();
 
@@ -81,30 +81,46 @@ const router = express.Router();
  *         description: Internal server error
  */
 
-
 //Create post
 router.post("/", isAdmin.isAdmin, postController.createPost);
 
 /**
-* @swagger
-* /posts:
-*   get:
-*       summary: For returning all posts
-*       tags: [Posts]
-*       
-*       description: return all posts
-*       responses:
-*        200:
-*            description: post Returned successfully
-*            content:
-*              application/json:
-*                schema:
-*                    type: object
-*         
-*/
+ * @swagger
+ * /posts:
+ *   get:
+ *     summary: Get all posts
+ *     tags:
+ *       - Posts
+ *     description: Retrieve a list of posts with pagination.
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: The page number to retrieve (default is 1).
+ *     responses:
+ *       200:
+ *         description: Posts returned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 posts:
+ *                   type: array
+ *                   items:
+ *                 totalPages:
+ *                   type: integer
+ *                   description: The total number of pages.
+ *                 currentPage:
+ *                   type: integer
+ *                   description: The current page being displayed.
+ *       404:
+ *         description: Page not found
+ */
 
 //View all Post
-router.get('/', postController.getAllPost, (req, res) => {
+router.get("/", postController.getAllPost, (req, res) => {
   res.send(req.posts);
 });
 
@@ -113,65 +129,55 @@ router.get('/', postController.getAllPost, (req, res) => {
  * @swagger
  * /posts/{id}:
  *   get:
- *     summary: For returning a single post
- *     tags: [Posts]
- *     description: Return a single post by its ID
+ *     summary: Get an individual post by ID
+ *     tags:
+ *       - Posts
+ *     description: Retrieve a specific post by its ID.
  *     parameters:
- *       - name: id
- *         description: ID of the post to return
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
- *         type: string
- *     security:
- *       - bearerAuth: []
+ *         schema:
+ *           type: string
+ *         description: The ID of the post to retrieve.
  *     responses:
  *       200:
- *         description: Post returned successfully
+ *         description: Post retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 title:
+ *                 message:
  *                   type: string
- *                   description: Title of the post
- *                 description:
- *                   type: string
- *                   description: Description of the post
- *                 imageUrl:
- *                   type: string
- *                   description: URL of the post's image
+ *                   description: A message indicating the success.
+ *                 post:
  *       404:
  *         description: Post not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   description: Error message
  */
-
-
 //View individual Post
-router.get("/:id", isAdmin.isAuthorized, postController.getOnePost, (req, res) => {
-  res.send(req.post);
-});
+router.get(
+  "/:id",
+  isAdmin.isAuthorized,
+  postController.getOnePost,
+  (req, res) => {
+    res.send(req.post);
+  }
+);
 //documentation for Update post
 /**
  * @swagger
  * /posts/{id}:
  *   patch:
- *     summary: Update a specific post by ID
+ *     summary: Update an individual post by ID
  *     tags: [Posts]
- *     description: Update the details of a post by its ID
  *     parameters:
- *       - name: id
- *         description: ID of the post to update
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
- *         type: string
+ *         schema:
+ *           type: string
+ *         description: The ID of the post to update
  *     requestBody:
  *       required: true
  *       content:
@@ -179,17 +185,49 @@ router.get("/:id", isAdmin.isAuthorized, postController.getOnePost, (req, res) =
  *           schema:
  *             type: object
  *             properties:
- *               title:
+ *               post_title:
  *                 type: string
- *                 description: Updated title of the post
- *               description:
+ *                 description: The updated title of the post
+ *               post_subtitles:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     subtitle:
+ *                       type: string
+ *                       description: A subtitle for the post
+ *                 description: An array of updated subtitles for the post
+ *               post_contents:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     content:
+ *                       type: string
+ *                       description: The updated content of the post
+ *                     subtitle:
+ *                       type: string
+ *                       description: The subtitle associated with the updated content
+ *                 description: An array of updated content objects for the post
+ *               post_media:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                       enum: [image, video]
+ *                       description: The updated type of media (image or video)
+ *                     url:
+ *                       type: string
+ *                       description: The updated URL of the media
+ *                     subtitle:
+ *                       type: string
+ *                       description: The subtitle associated with the updated media
+ *                 description: An array of updated media objects for the post
+ *               post_category:
  *                 type: string
- *                 description: Updated description of the post
- *               imageUrl:
- *                 type: string
- *                 description: Updated URL of the post's image
- *     security:
- *       - bearerAuth: []
+ *                 description: The updated category of the post
  *     responses:
  *       200:
  *         description: Post updated successfully
@@ -198,31 +236,30 @@ router.get("/:id", isAdmin.isAuthorized, postController.getOnePost, (req, res) =
  *             schema:
  *               type: object
  *               properties:
- *                 title:
+ *                 message:
  *                   type: string
- *                   description: Title of the updated post
- *                 description:
- *                   type: string
- *                   description: Description of the updated post
- *                 imageUrl:
- *                   type: string
- *                   description: URL of the updated post's image
+ *                   description: A success message
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Post not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   description: Error message
+ *       500:
+ *         description: Internal server error
  */
 
 //update post
-router.patch("/:id", postController.updateOnePost, (req, res) => {
-  res.send(req.post);
-});
+router.patch(
+  "/:id",
+  isAdmin.isAdmin,
+  postController.updateOnePost,
+  (req, res) => {
+    res.send(req.post);
+  }
+);
 
 //Documentation for deleting specific post
 
@@ -230,41 +267,42 @@ router.patch("/:id", postController.updateOnePost, (req, res) => {
  * @swagger
  * /posts/{id}:
  *   delete:
- *     summary: Delete a specific post by ID
+ *     summary: Delete an individual post by ID
  *     tags: [Posts]
- *     description: Remove a post by its ID
  *     parameters:
- *       - name: id
- *         description: ID of the post to delete
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
- *         type: string
- *     security:
- *       - bearerAuth: []
+ *         schema:
+ *           type: string
+ *         description: The ID of the post to delete
  *     responses:
  *       200:
  *         description: Post deleted successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: string
- *               description: Confirmation message
- *       404:
- *         description: Post not found
- *         content:
- *           application/json:
- *             schema:
  *               type: object
  *               properties:
- *                 error:
+ *                 message:
  *                   type: string
- *                   description: Error message
+ *                   description: A success message
+ *                 post:
+ *       404:
+ *         description: Post to delete not found
+ *       500:
+ *         description: Internal server error
  */
 
 //Delete one Post
-router.delete("/:id", isAdmin.isAuthorized, postController.deletePost, (req, res) => {
-  res.send("Post deleted Successfully");
-});
+router.delete(
+  "/:id",
+  isAdmin.isAuthorized,
+  postController.deletePost,
+  (req, res) => {
+    res.send("Post deleted Successfully");
+  }
+);
 
 //Delete all post
 // router.delete('/',postController.deleteAllPost,(req,res)=>{

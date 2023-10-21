@@ -1,7 +1,8 @@
 const Post = require("../models/post");
 const Joi = require("joi");
-const handleError = require('../utils/handleError')
-const validation = require('../middleware/validation/Post')
+const mongoose = require("mongoose");
+const handleError = require("../utils/handleError");
+const validation = require("../middleware/validation/Post");
 require("dotenv/config");
 const createPost = async (req, res, next) => {
   try {
@@ -10,22 +11,23 @@ const createPost = async (req, res, next) => {
       post_subtitles,
       post_contents,
       post_media,
-      post_category
-
+      post_category,
     } = req.body;
 
-    validation.validateSubtitles(post_subtitles)
-    await validation.validatePostTitle(post_title)
-    const extractedSubtitles = post_subtitles.map((substitleObj) => substitleObj.subtitle)
+    validation.validateSubtitles(post_subtitles);
+    await validation.validatePostTitle(post_title);
+    const extractedSubtitles = post_subtitles.map(
+      (substitleObj) => substitleObj.subtitle
+    );
     //Create a set of subtitle strings for fast lookup
-    const subtitleSet = new Set(extractedSubtitles)
+    const subtitleSet = new Set(extractedSubtitles);
     const newPost = new Post({
       post_title,
       post_subtitles,
       post_contents,
       post_images: [],
       post_videos: [],
-      post_category
+      post_category,
     });
 
     post_media.forEach((media) => {
@@ -33,122 +35,141 @@ const createPost = async (req, res, next) => {
       if (media.type === "image") {
         newPost.post_images.push({
           imageUrl: media.url,
-          subtitle: media.subtitle
-        })
-      }
-      else if (media.type === "video") {
+          subtitle: media.subtitle,
+        });
+      } else if (media.type === "video") {
         newPost.post_videos.push({
           videoUrl: media.url,
           subtitle: media.subtitle,
-        })
+        });
       }
-    })
+    });
 
     await newPost.save();
     res.status(201).json({
       message: "Post Created successfully",
-      post: newPost
+      post: newPost,
     });
   } catch (error) {
-    handleError(error, res)
+    handleError(error, res);
   }
 };
 
 const getAllPosts = async (req, res, next) => {
   try {
-    const posts = await Post.find({});
-    req.posts = posts;
-    res.status(201);
+    const page = parseInt(req.query.page) || 1;
+    const perPage = process.env.POST_PER_PAGE;
+
+    const skip = (page - 1) * perPage;
+    const posts = await Post.find({}).skip(skip).limit(perPage);
+    const totalPosts = await Post.countDocuments({});
+    const totalPages = Math.ceil(totalPosts / perPage);
+    if (page > totalPages || page < 1) {
+      res.status(404).json({
+        error: "Page not found",
+      });
+    }
+    req.post = posts;
+    res.status(200).json({
+      posts,
+      totalPages,
+      currentPage: page,
+    });
     next();
-  } catch {
-    res.status(404);
-    res.send({ error: "Failed to retrieve all Post!" });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 
 const getOnePost = async (req, res, next) => {
-  const schema = Joi.object({
-    id: Joi.string().required(),
-  });
-  const { error } = schema.validate(req.params);
-  if (error) {
-    res.status(404);
-    res.send({ error: error.message });
-  }
   try {
-    const post = await Post.findOne({ _id: req.params.id });
+    const postId = req.params.id;
+    const post = await Post.findOne({
+      post_id: postId,
+    });
     if (!post) {
-      res.status(404);
-      return res.json({ error: "Post doesn't exist" });
+      res.status(404).json({ error: "Post not Found" });
+      return;
     }
-    if (!post._id) {
-      // res.status(201);
-      res.json({ error: "Post doesn't have an _id property" });
-    }
-    res.status(200).json({ message: "success" });
     req.post = post;
-    next();
-  } catch {
-    res.status(404);
-    res.json({ error: "Post doesn't exist!" });
+    res.status(200).json({
+      message: "Post found",
+      post,
+    });
+  } catch (error) {
+    handleError(error, res);
   }
 };
+
 const updateOnePost = async (req, res, next) => {
-  const schema = Joi.object({
-    id: Joi.string().required(),
-    title: Joi.string().allow(""),
-    description: Joi.string().allow(""),
-    imageUrl: Joi.string().uri().allow(""),
-  });
-  const { error } = schema.validate({ ...req.params, ...req.body });
-  if (error) {
-    res.status(404);
-    res.json({ error: error.message });
-    return;
-  }
   try {
-    const post = await Post.findOne({ _id: req.params.id });
-    if (!post) {
-      res.status(404);
-      res.json({ error: "Post doesn't exist" });
+    const postId = req.params.id;
+
+    const {
+      post_title,
+      post_subtitles,
+      post_contents,
+      post_media,
+      post_category,
+    } = req.body;
+    validation.validateSubtitles(post_subtitles);
+    const extractedSubtitles = post_subtitles.map(
+      (substitleObj) => substitleObj.subtitle
+    );
+    const subtitleSet = new Set(extractedSubtitles);
+    const existingPost = await Post.findOne({ post_id: postId });
+    if (!existingPost) {
+      res.status(404).json({
+        error: "Post not found",
+      });
+      return;
     }
-    if (req.body.title) {
-      post.title = req.body.title;
-    }
-    if (req.body.description) {
-      post.description = req.body.description;
-    }
-    if (req.body.imageUrl) {
-      post.imageurl = req.body.imageUrl;
-    }
-    await post.save();
-    req.post = post;
-    next();
-  } catch {
-    res.status(404).json({ error: "Post doesn't exist" });
+    // Update the post fields
+    existingPost.post_title = post_title;
+    existingPost.post_subtitles = post_subtitles;
+    existingPost.post_contents = post_contents;
+    existingPost.post_images = [];
+    existingPost.post_videos = [];
+    existingPost.post_category = post_category;
+    post_media.forEach((media) => {
+      validation.validateMediaSubtitle(media.subtitle, subtitleSet);
+      if (media.type === "image") {
+        existingPost.post_images.push({
+          image_url: media.url,
+          subtitle: media.subtitle,
+        });
+      } else if (media.type === "video") {
+        existingPost.post_videos.push({
+          videoUrl: media.url,
+          subtitle: media.subtitle,
+        });
+      }
+    });
+    await existingPost.save();
+    res.status(200).json({
+      message: "Post updated Successfully",
+      post: existingPost,
+    });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 const deletePost = async (req, res, next) => {
-  const schema = Joi.object({
-    id: Joi.string().required(),
-  });
-  const { error } = schema.validate(req.params);
-  if (error) {
-    res.status(404);
-    res.send({ error: error.message });
-  }
   try {
-    const deletedPost = await Post.deleteOne({ _id: req.params.id });
+    const postId = req.params.id;
+    const deletedPost = await Post.findOneAndRemove({
+      post_id: postId,
+    });
     if (!deletedPost) {
-      res.status(404);
-      res.json({ error: "Post doesn't exist" });
+      res.status(404).json({ error: "Post to delete not found" });
+      return;
     }
-    req.deletedPost = deletedPost;
-    res.status(200).json({ message: "Post deleted Successfully" });
-    next();
-  } catch {
-    res.status(500);
-    res.send({ error: "Internal server error" });
+
+    res
+      .status(200)
+      .json({ message: "Post deleted successfully", post: deletedPost });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 // const deleteAllPost = async (req, res, next) => {
