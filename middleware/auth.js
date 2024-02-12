@@ -15,12 +15,14 @@ const isAdmin = (req, res, next) => {
     }
     const decoded = jwt.verify(authToken, process.env.TOKEN_SECRET);
     if (!decoded || decoded.role !== process.env.ADMIN_ROLE) {
-      return res.status(403).json({ error: "You are not authorized for this API" });
+      return res
+        .status(403)
+        .json({ error: "You are not authorized for this API" });
     }
     req.user = decoded;
     return next();
   } catch (error) {
-    handleError(error, res)
+    handleError(error, res);
   }
 };
 
@@ -41,12 +43,11 @@ const isAuthorized = (req, res, next) => {
     req.user = decoded;
     return next();
   } catch (error) {
-    handleError(error, res)
+    handleError(error, res);
   }
-
-}
+};
 
 module.exports = {
   isAdmin,
-  isAuthorized
+  isAuthorized,
 };

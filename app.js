@@ -49,7 +49,8 @@ const options = {
 const specs = swaggerJsDoc(options);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/updatePassword", updatePasswordRoute);
-app.use("/posts", postRoutes, commentRoute);
+app.use("/posts", postRoutes);
+app.use("/comments", commentRoute);
 app.use("/auth", authRoute);
 app.use("/contact", contactRoute);
 app.use("/users", userRoute);

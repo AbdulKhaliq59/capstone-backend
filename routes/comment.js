@@ -1,5 +1,10 @@
 const express = require("express");
-const { addComment, deleteComment, countComments } = require("../controller/comment");
+const {
+  addComment,
+  deleteComment,
+  countComments,
+  editComment,
+} = require("../controller/comment");
 const { UpdatePost } = require("../controller/Post");
 const authenticate = require("../middleware/auth");
 const router = express.Router();
@@ -39,10 +44,9 @@ const router = express.Router();
  *         description: Unauthorized
  */
 
-
 //Add comments
 
-router.post("/:id/comments", authenticate.isAuthorized, addComment, UpdatePost);
+router.post("/:id", authenticate.isAuthorized, addComment);
 
 /**
  * @swagger
@@ -74,9 +78,8 @@ router.post("/:id/comments", authenticate.isAuthorized, addComment, UpdatePost);
  *         description: Comment not found
  */
 
-
 //Delete comment
-router.delete("/:id/comments/:id", authenticate.isAuthorized, deleteComment);
+router.delete("/:postId/:commentId", authenticate.isAuthorized, deleteComment);
 
 //Documentation counting comments on specific post
 /**
@@ -108,9 +111,8 @@ router.delete("/:id/comments/:id", authenticate.isAuthorized, deleteComment);
  *         description: Post not found
  */
 
-
 //Count comments
-router.get('/:id/comments/count', countComments);
+router.get("/:id", authenticate.isAuthorized, countComments);
 
-
+router.patch("/:postId/:commentId", authenticate.isAuthorized, editComment);
 module.exports = router;
